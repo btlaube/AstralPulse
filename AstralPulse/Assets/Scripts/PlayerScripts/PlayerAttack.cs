@@ -24,8 +24,12 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private float attackChargeTimer;
 
     // Attack Particle
-    private ParticleSystem particleSystem;
+    private ParticleSystem pSystem;
     private bool isEmitting;
+
+    [SerializeField] private Vector3 attackRangeScaleVector;
+    [SerializeField] private float attackRange = 0.0f;
+    [SerializeField] private float attackPower = 0.0f;
 
     void Awake()
     {
@@ -37,13 +41,14 @@ public class PlayerAttack : MonoBehaviour
         pulseTransform = transform.Find("AttackVisual/AttackPulse");
         pulse = pulseTransform.gameObject;
 
-        particleSystem = GetComponentInChildren<ParticleSystem>();
+        // pSystem = GetComponentInChildren<ParticleSystem>();
+        pSystem = GetComponentInChildren<ParticleSystem>();
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        // particleSystem.Play();
+        // pSystem.Play();
         currentAttackLevel = 1;
         playerAnimator.SetInteger("AttackLevel", -1);
         twinkle.SetActive(false);
@@ -85,24 +90,24 @@ public class PlayerAttack : MonoBehaviour
             {
                 case 1:
                     SetParticleSystem(0.4f, -1.3f, 0.10f, 30.0f, 0.65f);
-                    twinkleTransform.localScale = Vector3.one * 0.5f;
-                    pulseTransform.localScale = Vector3.one * 0.7f;
+                    twinkleTransform.localScale = Vector3.one * attackRangeScaleVector.x / 2.0f;
+                    pulseTransform.localScale = Vector3.one * attackRangeScaleVector.x;
                     break;
                 case 2:
                     SetParticleSystem(0.4f, -1.45f, 0.25f, 50.0f, 0.7f);
-                    twinkleTransform.localScale = Vector3.one * 0.8f;
-                    pulseTransform.localScale = Vector3.one * 1.0f;
+                    twinkleTransform.localScale = Vector3.one * attackRangeScaleVector.y / 2.0f;
+                    pulseTransform.localScale = Vector3.one * attackRangeScaleVector.y;
                     break;
                 case 3:
                     SetParticleSystem(0.4f, -1.45f, 0.25f, 50.0f, 0.7f);
-                    twinkleTransform.localScale = Vector3.one * 1.0f;
-                    pulseTransform.localScale = Vector3.one * 1.5f;
+                    twinkleTransform.localScale = Vector3.one * attackRangeScaleVector.z / 2.0f;
+                    pulseTransform.localScale = Vector3.one * attackRangeScaleVector.z;
                     break;
             }
             if (!isEmitting)
             {
-                particleSystem.Play();
-                particleSystem.Emit(1);
+                pSystem.Play();
+                pSystem.Emit(1);
                 isEmitting = true;
             }
         }
@@ -110,18 +115,67 @@ public class PlayerAttack : MonoBehaviour
 
     private void ReleaseAttack()
     {
+
+        // Attack Push
+        switch (currentAttackLevel)
+        {
+            case 1:
+                attackRange = attackRangeScaleVector.x;
+                attackPower = 3.0f;
+                break;
+            case 2:
+                attackRange = attackRangeScaleVector.y;
+                attackPower = 5.0f;
+                break;
+            case 3:
+                attackRange = attackRangeScaleVector.z;
+                attackPower = 7.0f;
+                break;
+        }
+
+        // Get Collisions
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, attackRange);
+        // Process the colliders
+        foreach (Collider2D collider in colliders)
+        {
+            // Check if the collided object implements IDamageable interface
+            IPushable pushableObject = collider.gameObject.GetComponent<IPushable>();
+
+            if (pushableObject != null)
+            {
+
+                Vector3 direction = collider.transform.position - transform.position;
+                // Normalize the direction vector to get a unit vector
+                direction.Normalize();
+
+                // The collided object implements the IDamageable interface
+                pushableObject.Push(direction, attackPower); // Example: Call a method from the interface
+            }
+        }
+
+
         // Debug.Log($"Released attack level {currentAttackLevel}");
-        attackChargeTimer = 0;
-        currentAttackLevel = 1;
+        // Attack Visual
         playerAnimator.SetInteger("AttackLevel", 0);
         playerAnimator.SetTrigger("ReleaseAttack");
         
         StopAllCoroutines();
         StartCoroutine("TwinkleAnimation");
 
-        particleSystem.Stop();
-        particleSystem.Clear();
+        pSystem.Stop();
+        pSystem.Clear();
         isEmitting = false;
+
+        attackChargeTimer = 0;
+        currentAttackLevel = 1;
+
+    }
+
+    // Optionally, visualize the detection circle in the Scene view
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 
     private IEnumerator TwinkleAnimation()
@@ -135,14 +189,16 @@ public class PlayerAttack : MonoBehaviour
 
     private void SetParticleSystem(float startLifetime, float startSpeed, float startSize, float rateOverTime, float radius)
     {
-        particleSystem.startLifetime = startLifetime;
-        particleSystem.startSpeed = startSpeed;
-        particleSystem.startSize = startSize;
+        ParticleSystem.MainModule main = pSystem.main;
 
-        ParticleSystem.EmissionModule psEmission = particleSystem.emission;
+        main.startLifetime = startLifetime;
+        main.startSpeed = startSpeed;
+        main.startSize = startSize;
+
+        ParticleSystem.EmissionModule psEmission = pSystem.emission;
         psEmission.rateOverTime = rateOverTime;
 
-        ParticleSystem.ShapeModule psShape = particleSystem.shape;
+        ParticleSystem.ShapeModule psShape = pSystem.shape;
         psShape.radius = radius;
     }
 

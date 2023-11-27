@@ -2,16 +2,16 @@ using UnityEngine;
 
 public class PlayerTeleport : MonoBehaviour
 {
-    void Update()
+
+    private Camera mainCamera;
+
+    void Awake()
     {
-        TeleportIfOutOfBounds();
+        mainCamera = Camera.main;
     }
 
-    private void TeleportIfOutOfBounds()
+    void Update()
     {
-        // Get the main camera
-        Camera mainCamera = Camera.main;
-
         if (mainCamera != null)
         {
             // Get the viewport position of the current player position
