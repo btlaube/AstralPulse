@@ -47,19 +47,27 @@ public class AsteroidMovement : MonoBehaviour, IPushable
         return new Vector3(targetOffset.x + Random.Range(offsetVariability.x, offsetVariability.y), targetOffset.y + Random.Range(offsetVariability.x, offsetVariability.y), targetOffset.z);
     }
 
-    public void OnTriggerEnter2D(Collider2D other)
+    public void OnCollisionEnter2D(Collision2D collision)
     {
-        if (other.CompareTag("Player"))
+        if (collision.gameObject.CompareTag("Player"))
         {
-            other.GetComponent<PlayerHealth>().TakeDamage(1.0f);
+            collision.gameObject.GetComponent<PlayerHealth>().TakeDamage(1.0f);
             GetComponent<ObstacleHealth>().TakeDamage(1.0f);
+        }
+        // Check if the collided object implements IDamageable interface
+        IDamageable damageableObject = collision.gameObject.GetComponent<IDamageable>();
+
+        if (damageableObject != null)
+        {
+            // The collided object implements the IDamageable interface
+            damageableObject.TakeDamage(1.0f); // Example: Call a method from the interface
         }
     }
 
     public void Push(Vector2 direction, float power)
     {
         rb.velocity = direction.normalized * power;
-        Debug.Log($"Applied: power {power}, direction {direction}");
+        // Debug.Log($"Applied: power {power}, direction {direction}");
     }
 
 }

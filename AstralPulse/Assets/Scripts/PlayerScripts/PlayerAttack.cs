@@ -31,6 +31,10 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private float attackRange = 0.0f;
     [SerializeField] private float attackPower = 0.0f;
 
+    [SerializeField] private Vector3 timeScaleVector;
+
+    private Camera myCamera;
+
     void Awake()
     {
         playerAnimator = transform.Find("PlayerVisual").gameObject.GetComponentInChildren<Animator>();
@@ -43,6 +47,8 @@ public class PlayerAttack : MonoBehaviour
 
         // pSystem = GetComponentInChildren<ParticleSystem>();
         pSystem = GetComponentInChildren<ParticleSystem>();
+
+        myCamera = Camera.main;
     }
 
     // Start is called before the first frame update
@@ -92,16 +98,22 @@ public class PlayerAttack : MonoBehaviour
                     SetParticleSystem(0.4f, -1.3f, 0.10f, 30.0f, 0.65f);
                     twinkleTransform.localScale = Vector3.one * attackRangeScaleVector.x / 2.0f;
                     pulseTransform.localScale = Vector3.one * attackRangeScaleVector.x;
+
+                    Time.timeScale = timeScaleVector.x;
                     break;
                 case 2:
                     SetParticleSystem(0.4f, -1.45f, 0.25f, 50.0f, 0.7f);
                     twinkleTransform.localScale = Vector3.one * attackRangeScaleVector.y / 2.0f;
                     pulseTransform.localScale = Vector3.one * attackRangeScaleVector.y;
+
+                    Time.timeScale = timeScaleVector.y;
                     break;
                 case 3:
                     SetParticleSystem(0.4f, -1.45f, 0.25f, 50.0f, 0.7f);
                     twinkleTransform.localScale = Vector3.one * attackRangeScaleVector.z / 2.0f;
                     pulseTransform.localScale = Vector3.one * attackRangeScaleVector.z;
+
+                    Time.timeScale = timeScaleVector.z;
                     break;
             }
             if (!isEmitting)
@@ -116,20 +128,23 @@ public class PlayerAttack : MonoBehaviour
     private void ReleaseAttack()
     {
 
+        Time.timeScale = 1.0f;
+        StartCoroutine(myCamera.GetComponent<CameraShake>().Shake(0.2f, 0.2f));
+
         // Attack Push
         switch (currentAttackLevel)
         {
             case 1:
                 attackRange = attackRangeScaleVector.x;
-                attackPower = 3.0f;
+                attackPower = attackRangeScaleVector.x * 2.0f;
                 break;
             case 2:
                 attackRange = attackRangeScaleVector.y;
-                attackPower = 5.0f;
+                attackPower = attackRangeScaleVector.y * 2.0f;
                 break;
             case 3:
                 attackRange = attackRangeScaleVector.z;
-                attackPower = 7.0f;
+                attackPower = attackRangeScaleVector.z * 2.0f;
                 break;
         }
 
@@ -138,9 +153,8 @@ public class PlayerAttack : MonoBehaviour
         // Process the colliders
         foreach (Collider2D collider in colliders)
         {
-            // Check if the collided object implements IDamageable interface
+            // Check if the collided object implements IPushable interface
             IPushable pushableObject = collider.gameObject.GetComponent<IPushable>();
-
             if (pushableObject != null)
             {
 
@@ -151,6 +165,15 @@ public class PlayerAttack : MonoBehaviour
                 // The collided object implements the IDamageable interface
                 pushableObject.Push(direction, attackPower); // Example: Call a method from the interface
             }
+
+            // Check if the collided object implements IDamageable interface
+            IDamageable damageableObject = collider.gameObject.GetComponent<IDamageable>();
+
+            if (damageableObject != null)
+            {
+                // The collided object implements the IDamageable interface
+                damageableObject.TakeDamage(1.0f); // Example: Call a method from the interface
+            }
         }
 
 
@@ -159,7 +182,7 @@ public class PlayerAttack : MonoBehaviour
         playerAnimator.SetInteger("AttackLevel", 0);
         playerAnimator.SetTrigger("ReleaseAttack");
         
-        StopAllCoroutines();
+        // StopAllCoroutines();
         StartCoroutine("TwinkleAnimation");
 
         pSystem.Stop();

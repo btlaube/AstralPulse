@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ObstacleHealth : MonoBehaviour
+public class ObstacleHealth : MonoBehaviour, IDamageable
 {
 
     // [Header("Visuals")]
@@ -45,13 +45,6 @@ public class ObstacleHealth : MonoBehaviour
                 StartCoroutine("Death");
             }
         }
-    }
-
-    public void Respawn()
-    {
-        // GetComponentInChildren<PlayerMovement>().enabled = true;
-        // playerVisual.SetActive(true);
-        // attackVisual.SetActive(true);
     }
 
     public IEnumerator Death()
