@@ -153,17 +153,29 @@ public class PlayerAttack : MonoBehaviour
         // Process the colliders
         foreach (Collider2D collider in colliders)
         {
-            // Check if the collided object implements IPushable interface
-            IPushable pushableObject = collider.gameObject.GetComponent<IPushable>();
-            if (pushableObject != null)
-            {
+            if (collider.gameObject.name == "Player") continue;
 
+            if (collider.gameObject.tag == "Unpushable")
+            {
+                Debug.Log("Hit unpushable");
                 Vector3 direction = collider.transform.position - transform.position;
                 // Normalize the direction vector to get a unit vector
                 direction.Normalize();
+                gameObject.GetComponent<PlayerRicochet>().Push(-direction, attackPower);
+            }
+            else
+            {
+                // Check if the collided object implements IPushable interface
+                IPushable pushableObject = collider.gameObject.GetComponent<IPushable>();
+                if (pushableObject != null)
+                {
+                    Vector3 direction = collider.transform.position - transform.position;
+                    // Normalize the direction vector to get a unit vector
+                    direction.Normalize();
 
-                // The collided object implements the IDamageable interface
-                pushableObject.Push(direction, attackPower); // Example: Call a method from the interface
+                    // The collided object implements the IDamageable interface
+                    pushableObject.Push(direction, attackPower); // Example: Call a method from the interface
+                }
             }
 
             // Check if the collided object implements IDamageable interface
