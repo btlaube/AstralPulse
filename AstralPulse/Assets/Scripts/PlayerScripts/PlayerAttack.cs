@@ -172,7 +172,7 @@ public class PlayerAttack : MonoBehaviour
             if (damageableObject != null)
             {
                 // The collided object implements the IDamageable interface
-                damageableObject.TakeDamage(1.0f); // Example: Call a method from the interface
+                damageableObject.TakeDamage(currentAttackLevel); // Example: Call a method from the interface
             }
         }
 
