@@ -25,22 +25,34 @@ public class Planet : MonoBehaviour
     void Update()
     {
         Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, gravityRadius);
+        Collider2D[] lockedColliders = Physics2D.OverlapCircleAll(transform.position, orbitRadius);
         foreach (Collider2D collider in colliders)
         {
+            // if (collider in lockedColliders) {return;}
+            if (Vector3.Distance(transform.position, collider.transform.position) < orbitRadius) continue;
             IAttractable attractableObject = collider.gameObject.GetComponent<IAttractable>();
             if (attractableObject != null)
             {
-                // Pull Attractable toward planet
+                // Calculate distance and direction
                 Vector3 direction = collider.transform.position - transform.position;
-                direction.Normalize();
-                attractableObject.Attract(-direction, gravityStrength);
+                float distance = direction.magnitude;
+
+                // Ensure distance is not zero to avoid division by zero
+                if (distance > 0.0f)
+                {
+                    // Adjust gravityStrength based on distance (inverse square law)
+                    float adjustedGravityStrength = gravityStrength / (distance * distance);
+
+                    // Apply the adjusted gravity
+                    attractableObject.Attract(-direction, adjustedGravityStrength);
+                }
             }
         }
 
-        colliders = Physics2D.OverlapCircleAll(transform.position, orbitRadius);
-        foreach (Collider2D collider in colliders)
+        // colliders = Physics2D.OverlapCircleAll(transform.position, orbitRadius);
+        foreach (Collider2D lockedCollider in lockedColliders)
         {
-            IAttractable attractableObject = collider.gameObject.GetComponent<IAttractable>();
+            IAttractable attractableObject = lockedCollider.gameObject.GetComponent<IAttractable>();
             if (attractableObject != null)
             {
                 // Lock Attractable in orbit around object
