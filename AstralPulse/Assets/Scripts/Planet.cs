@@ -28,35 +28,25 @@ public class Planet : MonoBehaviour
         Collider2D[] lockedColliders = Physics2D.OverlapCircleAll(transform.position, orbitRadius);
         foreach (Collider2D collider in colliders)
         {
-            // if (collider in lockedColliders) {return;}
-            if (Vector3.Distance(transform.position, collider.transform.position) < orbitRadius) continue;
             IAttractable attractableObject = collider.gameObject.GetComponent<IAttractable>();
             if (attractableObject != null)
             {
-                // Calculate distance and direction
-                Vector3 direction = collider.transform.position - transform.position;
-                float distance = direction.magnitude;
+                Vector3 direction = transform.position - collider.transform.position;
+                direction.Normalize();
 
-                // Ensure distance is not zero to avoid division by zero
-                if (distance > 0.0f)
-                {
-                    // Adjust gravityStrength based on distance (inverse square law)
-                    float adjustedGravityStrength = gravityStrength / (distance * distance);
-
-                    // Apply the adjusted gravity
-                    attractableObject.Attract(-direction, adjustedGravityStrength);
-                }
+                attractableObject.Attract(direction , gravityStrength);
             }
         }
 
-        // colliders = Physics2D.OverlapCircleAll(transform.position, orbitRadius);
         foreach (Collider2D lockedCollider in lockedColliders)
         {
             IAttractable attractableObject = lockedCollider.gameObject.GetComponent<IAttractable>();
             if (attractableObject != null)
             {
-                // Lock Attractable in orbit around object
-                attractableObject.Lock(transform, orbitRadius, orbitSpeed);
+                if (lockedCollider.gameObject.GetComponent<PlayerRicochet>().isLockable)
+                {
+                    attractableObject.Lock(transform, orbitRadius, orbitSpeed);
+                }
             }
         }
     }

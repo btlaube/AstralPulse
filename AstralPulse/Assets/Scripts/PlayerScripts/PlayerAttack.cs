@@ -157,11 +157,7 @@ public class PlayerAttack : MonoBehaviour
 
             if (collider.gameObject.tag == "Unpushable")
             {
-                Debug.Log("Hit unpushable");
-                Vector3 direction = collider.transform.position - transform.position;
-                // Normalize the direction vector to get a unit vector
-                direction.Normalize();
-                // gameObject.GetComponent<PlayerRicochet>().Push(-direction, attackPower);
+                
             }
             else
             {

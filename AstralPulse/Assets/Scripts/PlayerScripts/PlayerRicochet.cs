@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerRicochet : MonoBehaviour, IAttractable
+public class PlayerRicochet : MonoBehaviour, IAttractable, IPushable
 {
     public float speed = 5.0f;
     public float smoothness = 5.0f;
@@ -18,22 +18,41 @@ public class PlayerRicochet : MonoBehaviour, IAttractable
 
     private Rigidbody2D rb;
 
+    // Lockable for escape orbit
+    public float unlockDelay;
+    public bool isLockable;
+
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+    }
+
+    void Start()
+    {
+        isLockable = true;
+    }
+
+    void Update()
+    {
+        if (isLocked)
+        {
+            if (Input.GetKeyUp(KeyCode.Space))
+            {
+                Unlock();
+            }
+        }
     }
 
     void FixedUpdate()
     {
         if (isLocked)
         {
-
             // Smoothing variables for distance towards orbitParent
             Vector3 distanceVelocity = Vector3.zero;
             float distanceSmoothness = 0.1f; // Adjust this for a smooth transition towards orbitParent
 
             orbitAngle = (orbitAngle + Time.deltaTime * orbitSpeed) % (2f * Mathf.PI);
-            Debug.Log(orbitAngle);
+            // Debug.Log(orbitAngle);
 
             Vector3 orbitDirection = new Vector3(Mathf.Cos(orbitAngle), Mathf.Sin(orbitAngle), 0.0f);
             Vector3 orbitPos = orbitParent.position + orbitDirection * orbitRadius;
@@ -69,23 +88,44 @@ public class PlayerRicochet : MonoBehaviour, IAttractable
         orbitPos = direction * orbitRadius;
         // Calculate the angle in radians using Atan2
         orbitAngle = Mathf.Atan2(-direction.y, -direction.x);
-        // orbitAngle = float.Lerp(orbitAngle, Mathf.Atan2(-direction.y, -direction.x), Time.fixedDeltaTime * lockSmoothness);
         Debug.Log(orbitAngle);
-        // Debug.Log(orbitPos);
     }
 
     public void Unlock()
     {
         if (!isLocked) return;
+
+        // Apply ricochet
+        Vector3 direction = transform.position - orbitParent.position;
+        direction.Normalize();
+        StartCoroutine("DelayedUnlock");
+        rb.AddForce(direction * 50.0f, ForceMode2D.Impulse);
+
         Debug.Log("Unlocked");
         isLocked = false;
-
+        orbitParent = null;
     }
 
-    void OnDrawGizmos()
+    private IEnumerator DelayedUnlock()
     {
-        // Draw a gizmo circle to visualize the gravity radius
-        Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(orbitParent.position, orbitRadius);
+        isLockable = false;
+
+        yield return new WaitForSeconds(unlockDelay);
+
+        isLockable = true;
     }
+
+
+    public void Push(Vector2 direction, float power)
+    {
+        Vector2 targetVelocity = direction * power;
+        rb.velocity = Vector2.Lerp(rb.velocity, targetVelocity, Time.fixedDeltaTime * lockSmoothness);
+    }
+
+    // void OnDrawGizmos()
+    // {
+    //     // Draw a gizmo circle to visualize the gravity radius
+    //     Gizmos.color = Color.blue;
+    //     Gizmos.DrawWireSphere(orbitParent.position, orbitRadius);
+    // }
 }
