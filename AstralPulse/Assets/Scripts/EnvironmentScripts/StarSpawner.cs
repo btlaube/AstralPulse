@@ -3,62 +3,68 @@ using UnityEngine;
 
 public class StarSpawner : MonoBehaviour
 {
-    public GameObject starPrefab;
-    public Transform playerTransform;
-    public float gridWidth = 1.0f;
-    public float gridHeight = 1.0f;
+    public GameObject starsPrefab;
+    public Transform player;
+    public Transform nearestStars;
 
-    private Transform[,] starGrid = new Transform[3, 3];
-    private Vector2Int playerGridPosition;
+    public Vector2 spawnOffset;
+    public float despawnOffset = 20.0f;
+    public float starsWidth;
+    public float starsHeight;
 
     void Start()
     {
-        InitializeGrid();
+        nearestStars = Instantiate(starsPrefab, player.position, Quaternion.identity, transform).transform;
     }
 
     void Update()
     {
-        UpdatePlayerGridPosition();
-        CheckSpawnDespawnStars();
-    }
-
-    void InitializeGrid()
-    {
-        for (int row = 0; row < 3; row++)
+        // minDist = Mathf.inf;
+        foreach (Transform stars in transform)
         {
-            for (int col = 0; col < 3; col++)
+            if (Vector3.Distance(player.position, stars.position) < Vector3.Distance(player.position, nearestStars.position))
             {
-                Vector3 spawnPosition = new Vector3((col-1) * gridWidth, (row-1) * gridHeight, 0);
-                Transform star = Instantiate(starPrefab, spawnPosition, Quaternion.identity).transform;
-                star.SetParent(transform);
-                starGrid[row, col] = star;
+                nearestStars = stars;
             }
         }
-    }
 
-    void UpdatePlayerGridPosition()
-    {
-        // Calculate the player's grid position based on the world position
-        int row = Mathf.FloorToInt(playerTransform.position.y / gridWidth) + 1;
-        int col = Mathf.FloorToInt(playerTransform.position.x / gridHeight) + 1;
+        Vector3 direction = player.position - nearestStars.position;
+        Debug.Log(direction);
 
-        playerGridPosition = new Vector2Int(Mathf.Clamp(row, 0, 2), Mathf.Clamp(col, 0, 2));
-        Debug.Log(playerGridPosition);
-    }
+        // if direction.x < spawnOffset
+            // spawn to the left
+        Vector3 spawnPos = Vector3.zero;
 
-    void CheckSpawnDespawnStars()
-    {
-        // Check if player moved beyond the center sprite
-        if (playerGridPosition.x != 1 || playerGridPosition.y != 1)
+        if (direction.x < -spawnOffset.x)
         {
-            // Player Moved Up
-            if (playerGridPosition.y == 0)
+            spawnPos = new Vector3(nearestStars.position.x - starsWidth, nearestStars.position.y, 0.0f);
+        }
+        else if (direction.x > spawnOffset.x)
+        {
+            spawnPos = new Vector3(nearestStars.position.x + starsWidth, nearestStars.position.y, 0.0f);
+        }
+
+        if (direction.y < -spawnOffset.y)
+        {
+            spawnPos = new Vector3(nearestStars.position.x, nearestStars.position.y - starsHeight, 0.0f);
+        }
+        else if (direction.y > spawnOffset.y)
+        {
+            spawnPos = new Vector3(nearestStars.position.x, nearestStars.position.y + starsHeight, 0.0f);
+        }
+
+        if (spawnPos != Vector3.zero)
+        {
+            Instantiate(starsPrefab, spawnPos, Quaternion.identity, transform);
+        }
+
+        // Remove obstacles that have moved far enough behind the player
+        GameObject[] obstacles = GameObject.FindGameObjectsWithTag("Background");
+        foreach (GameObject obstacle in obstacles)
+        {
+            if (obstacle.transform.position.x < player.position.x - despawnOffset)
             {
-                // Move bottom row to top row
-                for (int i = 0; i < 3; i++)
-                {
-                    // starGrid[]
-                }
+                Destroy(obstacle);
             }
         }
     }

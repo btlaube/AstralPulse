@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7334929820703053907}
   m_Layer: 0
   m_Name: Stars
-  m_TagString: Untagged
+  m_TagString: Background
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -73,7 +73,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: -10
-  m_Sprite: {fileID: 21300000, guid: 914727f4b61cc114684688f51800b647, type: 3}
+  m_Sprite: {fileID: 21300000, guid: d67c55bdfee3a5b4d8b082d9cb065247, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
