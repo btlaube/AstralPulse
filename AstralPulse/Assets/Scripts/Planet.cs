@@ -8,6 +8,7 @@ public class Planet : MonoBehaviour
     public float gravityRadius;
     public float orbitRadius;
     public float orbitSpeed;
+    public float orbitSmoothing;
     public float gravityStrength;
     public float escapeOrbitBuffer;
     public float normalForce;
@@ -20,23 +21,25 @@ public class Planet : MonoBehaviour
             PlayerRicochet pRicochet = collider.gameObject.GetComponent<PlayerRicochet>();
             if (pRicochet != null)
             {
-
+                if (Vector3.Distance(transform.position, collider.transform.position) <= orbitRadius)
+                {
+                    continue;
+                }
                 if (Vector3.Distance(transform.position, collider.transform.position) > orbitRadius + escapeOrbitBuffer && pRicochet.isLocked)
                 {
                     Debug.Log(Vector3.Distance(transform.position, collider.transform.position));
                     pRicochet.Unlock();
                 }
-
-                // Move toward the orbit radius
+                // collider is within gravity radius and outside of orbit Radius
+                // attract collider
                 Vector3 direction = transform.position - collider.transform.position;
                 direction.Normalize();
+                collider.gameObject.GetComponent<Rigidbody2D>().AddForce(direction * gravityStrength, ForceMode2D.Force);
 
-                Vector3 normal = new Vector3(-direction.y, direction.x, 0.0f) * normalForce;
-
-                Vector2 result = direction + normal;
-
-                Vector2 force = result * gravityStrength;
-                collider.gameObject.GetComponent<Rigidbody2D>().AddForce(force, ForceMode2D.Force);
+                // apply normal force
+                Vector3 normal = new Vector3(-direction.y, direction.x, 0.0f);
+                collider.gameObject.GetComponent<Rigidbody2D>().AddForce(normal * normalForce, ForceMode2D.Force);
+                Debug.Log("Applied forces");
             }
         }
 
@@ -48,11 +51,8 @@ public class Planet : MonoBehaviour
             {
                 if (pRicochet.isLocked)
                 {
-                    Vector3 distanceVelocity = Vector3.zero;
-
-                    pRicochet.orbitAngle = (pRicochet.orbitAngle + Time.deltaTime * orbitSpeed) % (2f * Mathf.PI);
-                    Vector3 orbitDirection = new Vector3(Mathf.Cos(pRicochet.orbitAngle), Mathf.Sin(pRicochet.orbitAngle), 0.0f);
-                    Vector3 targetPos = transform.position + (orbitDirection * orbitRadius);
+                    pRicochet.orbitAngle += orbitSpeed / 1000.0f;
+                    Vector3 targetPos = CalculatePointOnCircle(pRicochet.orbitAngle);
                     collider.transform.position = targetPos;
                 }
                 else
@@ -65,6 +65,16 @@ public class Planet : MonoBehaviour
                 }
             }
         }
+    }
+
+    // Function to calculate the position on the circle based on the angle
+    Vector3 CalculatePointOnCircle(float angle)
+    {
+        float x = transform.position.x + orbitRadius * Mathf.Cos(angle);
+        float y = transform.position.y + orbitRadius * Mathf.Sin(angle);
+
+        // Assuming the circle is in the XY plane
+        return new Vector3(x, y, 0f);
     }
 
     void OnDrawGizmos()

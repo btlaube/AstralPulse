@@ -2,6 +2,10 @@ using UnityEngine;
 
 public class PlayerTeleport : MonoBehaviour
 {
+    public float minX;
+    public float minY;
+    public float maxX;
+    public float maxY;
 
     private Camera mainCamera;
 
@@ -18,23 +22,23 @@ public class PlayerTeleport : MonoBehaviour
             Vector3 viewportPos = mainCamera.WorldToViewportPoint(transform.position);
 
             // Check if the player is outside the camera bounds and adjust their position accordingly
-            if (viewportPos.x > 1.0f)
+            if (transform.position.x > maxX)
             {
                 // Teleport to the left side
                 transform.position = new Vector3(-mainCamera.orthographicSize * mainCamera.aspect, transform.position.y, transform.position.z);
             }
-            else if (viewportPos.x < 0.0f)
+            else if (transform.position.x < minX)
             {
                 // Teleport to the right side
                 transform.position = new Vector3(mainCamera.orthographicSize * mainCamera.aspect, transform.position.y, transform.position.z);
             }
 
-            if (viewportPos.y > 1.0f)
+            if (transform.position.y > maxY)
             {
                 // Teleport to the bottom
                 transform.position = new Vector3(transform.position.x, -mainCamera.orthographicSize, transform.position.z);
             }
-            else if (viewportPos.y < 0.0f)
+            else if (transform.position.y < minY)
             {
                 // Teleport to the top
                 transform.position = new Vector3(transform.position.x, mainCamera.orthographicSize, transform.position.z);

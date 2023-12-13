@@ -32,6 +32,7 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private float attackPower = 0.0f;
 
     [SerializeField] private Vector3 timeScaleVector;
+    [SerializeField] private float escapeScaler;
 
     private Camera myCamera;
 
@@ -159,7 +160,7 @@ public class PlayerAttack : MonoBehaviour
             {
                 Vector2 direction = transform.position - collider.transform.position;
                 direction.Normalize();
-                GetComponent<PlayerRicochet>().Push(direction, attackPower);
+                GetComponent<PlayerRicochet>().Push(direction, attackPower * escapeScaler);
             }
             else
             {
@@ -170,15 +171,13 @@ public class PlayerAttack : MonoBehaviour
                     Vector3 direction = collider.transform.position - transform.position;
                     // Normalize the direction vector to get a unit vector
                     direction.Normalize();
-
                     // The collided object implements the IDamageable interface
-                    pushableObject.Push(direction, attackPower); // Example: Call a method from the interface
+                    pushableObject.Push(direction, attackPower * escapeScaler); // Example: Call a method from the interface
                 }
             }
 
             // Check if the collided object implements IDamageable interface
             IDamageable damageableObject = collider.gameObject.GetComponent<IDamageable>();
-
             if (damageableObject != null)
             {
                 // The collided object implements the IDamageable interface

@@ -11,9 +11,10 @@ public class PlayerRicochet : MonoBehaviour, IAttractable, IPushable
     // public Transform orbitParent;
     // // public float orbitRadius;
     public float orbitAngle;
+    public float ricochetScale;
     // public float orbitSpeed;
     // public float orbitAngularVelocity;
-    // public Vector3 orbitPos;
+    public Vector3 orbitPos;
 
     // [SerializeField] private float lockSmoothness;
 
@@ -78,7 +79,7 @@ public class PlayerRicochet : MonoBehaviour, IAttractable, IPushable
 
     public void Push(Vector2 direction, float power)
     {
-        rb.AddForce(direction * power, ForceMode2D.Impulse);
+        rb.AddForce(direction * power * ricochetScale, ForceMode2D.Impulse);
     }
 
     // void OnDrawGizmos()
