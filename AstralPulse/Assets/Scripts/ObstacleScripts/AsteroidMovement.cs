@@ -12,15 +12,20 @@ public class AsteroidMovement : MonoBehaviour, IPushable
     public Vector2 speedOffset;
 
     private Rigidbody2D rb;
+    private SpriteRenderer sr;
+    public Sprite[] sprites;
 
     void Awake()
     {
         playerTransform = GameObject.Find("Player").transform;
         rb = GetComponent<Rigidbody2D>();
+        sr = GetComponentInChildren<SpriteRenderer>();
     }
 
     private void Start()
     {
+        sr.sprite = sprites[Random.Range(0, sprites.Length)];
+
         // Calculate the adjusted target position with the offset
         Vector3 adjustedTarget = playerTransform.position + GetTargetOffset();
 
@@ -57,11 +62,8 @@ public class AsteroidMovement : MonoBehaviour, IPushable
         // Check if the collided object implements IDamageable interface
         IDamageable damageableObject = collision.gameObject.GetComponent<IDamageable>();
 
-        if (damageableObject != null)
-        {
-            // The collided object implements the IDamageable interface
-            damageableObject.TakeDamage(1.0f); // Example: Call a method from the interface
-        }
+
+        if (damageableObject != null) damageableObject.TakeDamage(1.0f);
     }
 
     public void Push(Vector2 direction, float power)

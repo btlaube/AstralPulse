@@ -4,13 +4,8 @@ using UnityEngine;
 
 public class MainMenuCanvas : MonoBehaviour
 {
-    public void FreeMoveSceneButton()
+    public void GameSceneButton()
     {
         LevelLoader.instance.LoadScene(1);
-    }
-
-    public void RicochetSceneButton()
-    {
-        LevelLoader.instance.LoadScene(2);
     }
 }

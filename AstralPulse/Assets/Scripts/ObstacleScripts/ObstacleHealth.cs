@@ -10,6 +10,8 @@ public class ObstacleHealth : MonoBehaviour, IDamageable
     // private GameObject playerVisual;
     // private GameObject attackVisual;
 
+    public GameObject fragmentPrefab;
+
     [SerializeField] private float startingHealth;
     public float currentHealth;
 
@@ -17,9 +19,7 @@ public class ObstacleHealth : MonoBehaviour, IDamageable
 
     void Awake()
     {
-        // playerVisual = transform.Find("PlayerVisual").gameObject;
-        // attackVisual = transform.Find("AttackVisual/AttackPulse").gameObject;
-        // playerAnimator = playerVisual.GetComponentInChildren<Animator>();
+        currentHealth += Random.Range(0, 3);
     }
 
     void Start()
@@ -51,7 +51,19 @@ public class ObstacleHealth : MonoBehaviour, IDamageable
     {
         // playerAnimator.SetTrigger("Die");
         // GetComponentInChildren<PlayerMovement>().enabled = false;
+
+        // Add points to player
+        GameObject.Find("Player").GetComponent<PlayerScoreCounter>().AddPointsWithIcon(GetComponentInChildren<SpriteRenderer>().sprite, Random.Range(115, 237));
+
+
+        int randomDrops = Random.Range(2, 5);
+        for (int i = 0; i < randomDrops; i++)
+        {
+            Instantiate(fragmentPrefab, transform.position, Quaternion.identity);
+        }
+
         Destroy(gameObject);
+
         yield return new WaitForSeconds(1.0f);
 
         // Hide all player visuals

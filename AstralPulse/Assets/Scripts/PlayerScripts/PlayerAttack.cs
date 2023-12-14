@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerAttack : MonoBehaviour
 {
@@ -8,8 +9,10 @@ public class PlayerAttack : MonoBehaviour
     // Animator
     private Animator playerAnimator;
 
+    // private int availableAttacks;
+    private PlayerAmmo playerAmmo;
     [SerializeField] private int attackLevel;
-    [SerializeField] private int maxAttackLevel;
+    [SerializeField] int maxAttackLevel;
     [SerializeField] private int currentAttackLevel;
     
     [Header("Attack Visual")]
@@ -35,9 +38,12 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private float escapeScaler;
 
     private Camera myCamera;
+    public AttackSegmentController attackBar;
 
     void Awake()
     {
+        playerAmmo = GetComponent<PlayerAmmo>();
+
         playerAnimator = transform.Find("PlayerVisual").gameObject.GetComponentInChildren<Animator>();
         
         twinkleTransform = transform.Find("AttackVisual/AttackTwinkle");
@@ -80,7 +86,7 @@ public class PlayerAttack : MonoBehaviour
 
     private void ChargeAttack()
     {
-        if (currentAttackLevel < maxAttackLevel)
+        if (currentAttackLevel < playerAmmo.availableAttacks)
         {
             attackChargeTimer += Time.deltaTime;
             if (attackChargeTimer >= attackChargeRate)
@@ -89,9 +95,12 @@ public class PlayerAttack : MonoBehaviour
                 currentAttackLevel += 1;
                 // playerAnimator.SetInteger("AttackLevel", currentAttackLevel);
             }
-            playerAnimator.SetInteger("AttackLevel", currentAttackLevel);
+        }
+        playerAnimator.SetInteger("AttackLevel", currentAttackLevel);
             
-
+            // attackBar.ActivateAttackToLevel(currentAttackLevel-1);
+            float chargeAmount = attackChargeTimer / attackChargeRate;
+            // attackBar.ChargeAttackToLevel(0, chargeAmount);
             
             switch (currentAttackLevel)
             {
@@ -101,6 +110,9 @@ public class PlayerAttack : MonoBehaviour
                     pulseTransform.localScale = Vector3.one * attackRangeScaleVector.x;
 
                     Time.timeScale = timeScaleVector.x;
+
+                    attackBar.ActivateAttackToLevel(0, 1.0f);
+                    attackBar.ActivateAttackToLevel(1, chargeAmount);
                     break;
                 case 2:
                     SetParticleSystem(0.4f, -1.45f, 0.25f, 50.0f, 0.7f);
@@ -108,6 +120,8 @@ public class PlayerAttack : MonoBehaviour
                     pulseTransform.localScale = Vector3.one * attackRangeScaleVector.y;
 
                     Time.timeScale = timeScaleVector.y;
+
+                    attackBar.ActivateAttackToLevel(2, chargeAmount);
                     break;
                 case 3:
                     SetParticleSystem(0.4f, -1.45f, 0.25f, 50.0f, 0.7f);
@@ -115,6 +129,8 @@ public class PlayerAttack : MonoBehaviour
                     pulseTransform.localScale = Vector3.one * attackRangeScaleVector.z;
 
                     Time.timeScale = timeScaleVector.z;
+
+                    // attackBar.ChargeAttackToLevel(2, chargeAmount);
                     break;
             }
             if (!isEmitting)
@@ -123,11 +139,15 @@ public class PlayerAttack : MonoBehaviour
                 pSystem.Emit(1);
                 isEmitting = true;
             }
-        }
     }
 
     private void ReleaseAttack()
     {
+
+        attackBar.DischargeAll();
+        
+        playerAmmo.availableAttacks = Mathf.Clamp(playerAmmo.availableAttacks - currentAttackLevel, 0, maxAttackLevel);
+        playerAmmo.UpdateAvailability();
 
         Time.timeScale = 1.0f;
         StartCoroutine(myCamera.GetComponent<CameraShake>().Shake(0.2f, 0.2f));
@@ -137,15 +157,15 @@ public class PlayerAttack : MonoBehaviour
         {
             case 1:
                 attackRange = attackRangeScaleVector.x;
-                attackPower = attackRangeScaleVector.x * 2.0f;
+                attackPower = attackRangeScaleVector.x * 1.2f;
                 break;
             case 2:
                 attackRange = attackRangeScaleVector.y;
-                attackPower = attackRangeScaleVector.y * 2.0f;
+                attackPower = attackRangeScaleVector.y * 1.2f;
                 break;
             case 3:
                 attackRange = attackRangeScaleVector.z;
-                attackPower = attackRangeScaleVector.z * 2.0f;
+                attackPower = attackRangeScaleVector.z * 1.5f;
                 break;
         }
 

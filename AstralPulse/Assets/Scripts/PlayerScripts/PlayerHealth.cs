@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerHealth : MonoBehaviour
 {
+    public GameObject playerDeathCanvas;
 
     [Header("Visuals")]
     private Animator playerAnimator;
@@ -14,6 +16,10 @@ public class PlayerHealth : MonoBehaviour
     public float currentHealth;
 
     private bool isDead;
+    public MonoBehaviour[] disableScripts;
+
+    // UI
+    public Image healthFill;
 
     void Awake()
     {
@@ -24,12 +30,18 @@ public class PlayerHealth : MonoBehaviour
 
     void Start()
     {
+        playerDeathCanvas.SetActive(false);
+        
         currentHealth = startingHealth;
+        float healthRatio = currentHealth / startingHealth;
+        healthFill.fillAmount = healthRatio;
     }
 
     public void TakeDamage(float damage)
     {
         currentHealth = Mathf.Clamp(currentHealth - damage, 0, startingHealth);
+        float healthRatio = currentHealth / startingHealth;
+        healthFill.fillAmount = healthRatio;
 
         if (currentHealth > 0)
         {
@@ -58,6 +70,12 @@ public class PlayerHealth : MonoBehaviour
     {
         playerAnimator.SetTrigger("Die");
         GetComponentInChildren<PlayerMovement>().enabled = false;
+        playerDeathCanvas.SetActive(true);
+
+        foreach (MonoBehaviour script in disableScripts)
+        {
+            script.enabled = false;
+        }
 
         yield return new WaitForSeconds(1.0f);
 
