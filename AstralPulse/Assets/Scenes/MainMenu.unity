@@ -1539,7 +1539,7 @@ MonoBehaviour:
   m_AssetsPPU: 32
   m_RefResolutionX: 640
   m_RefResolutionY: 360
-  m_CropFrame: 0
+  m_CropFrame: 1
   m_GridSnapping: 0
   m_FilterMode: 0
   m_UpscaleRT: 0
@@ -9150,7 +9150,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1869212931
 MonoBehaviour:
   m_ObjectHideFlags: 0
